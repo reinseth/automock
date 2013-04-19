@@ -1,0 +1,25 @@
+{
+    "bitwise": true,
+    "camelcase": true,
+    "curly": false,
+    "eqeqeq": true,
+    "forin": true,
+    "immed": true,
+    "indent": 4,
+    "latedef": true,
+    "newcap": true,
+    "noarg": true,
+    "undef": true,
+    "unused": true,
+    "strict": true,
+    "trailing": false,
+
+    "smarttabs": true,
+    "white": false,
+    "browser": true,
+
+    "globals": {
+        "define": true
+    }
+}
+

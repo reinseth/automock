@@ -1,3 +1,4 @@
+/* global jasmine, afterEach */
 define(function(require) {
     'use strict';
 
@@ -16,6 +17,7 @@ define(function(require) {
         options = options || {};
         options.mocks = options.mocks || {};
         options.passthrough = options.passthrough || [];
+        options.includes = options.includes || [];
 
         var moduleInitializer = factory.get(modulePath);
         if (!moduleInitializer) {
@@ -24,16 +26,29 @@ define(function(require) {
 
         var dependencies = {};
 
+        function isIncluded(path) {
+            return _.any(options.includes, function(include) {
+                if (path === include) {
+                    return true;
+                }
+                if (include.substr(include.length - 1) === '*' && path.indexOf(include.substr(0, include.length - 1)) === 0) {
+                    return true;
+                }
+                return false;
+            });
+        }
+
         var requireFacade = jasmine.createSpy('require').andCallFake(function(deps, callback) {
-            var realDependency,
-                dependency,
-                result;
+            var result;
 
             if (_.isString(deps)) {
                 deps = [deps];
             }
 
             result = _.map(deps, function(path) {
+                var realDependency,
+                    dependency;
+
                 if (dependencies[path]) {
                     return dependencies[path];
                 }
@@ -42,6 +57,8 @@ define(function(require) {
                     dependency = options.mocks[path];
                 } else if (_.contains(options.passthrough, path)) {
                     dependency = require(path);
+                } else if (isIncluded(path)) {
+                    dependency = factory.get(path)(requireFacade);
                 } else {
                     realDependency = require(path);
                     if (_.isFunction(realDependency)) {
