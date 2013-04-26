@@ -267,7 +267,8 @@
                 return {
                     _args: Array.prototype.slice.call(arguments),
                     thenReturn: this.thenReturn,
-                    thenCall: this.thenCall
+                    thenCall: this.thenCall,
+                    thenThrow: this.thenThrow
                 };
             },
             thenCall: function(func) {
@@ -285,6 +286,11 @@
                 // Dette fører til at første when aldri vil ta effekt dersom mocken blir kalt med noe annet enn 'arg'
                 this.thenCall(function() {
                     return value;
+                });
+            },
+            thenThrow: function(error) {
+                this.thenCall(function () {
+                    throw error;
                 });
             }
         };
