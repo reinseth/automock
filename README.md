@@ -1,5 +1,5 @@
 Automock for RequireJS and Jasmine
-==================================
+----------------------------------
 
 This is a support library for testing RequireJS modules with Jasmine. It is in early stages, and many things are yet to be formalised.
 
@@ -23,8 +23,7 @@ There are, however, plans for all of these limitations.
 For other libraries, check out:
 https://github.com/tnwinc/Isolate
 
-Example
--------
+### Example
 
 ```javascript
 // src/scripts/A.js
