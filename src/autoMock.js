@@ -1,8 +1,5 @@
-/*jshint camelcase:false*/
 (function(root) {
     'use strict';
-
-    // TODO Lag egen Mock type som enkapsulerer jasmine.Spy
 
     var require = root.require,
         jasmine = root.jasmine;
@@ -64,20 +61,20 @@
 
     var Modules = (function(root) {
         var require = root.require;
-        var moduleInitializers = {};
+        var factories = {};
         var execCb = require.s.contexts._.execCb;
 
-        require.s.contexts._.execCb = function(name, moduleInitializer) {
-            moduleInitializers[name] = moduleInitializer;
+        require.s.contexts._.execCb = function(name, factory) {
+            factories[name] = factory;
             return execCb.apply(this, arguments);
         };
 
         return {
             has: function(name) {
-                return !!moduleInitializers[name];
+                return !!factories[name];
             },
             init: function(name, customRequire) {
-                return moduleInitializers[name](customRequire || require);
+                return factories[name](customRequire || require);
             }
         };
     })(root);
@@ -146,15 +143,6 @@
         return result;
     }
 
-    /**
-     * @param {String} moduleName the module under test which will have its dependencies mocked
-     * @param {Object} [options]
-     * @param {Object} [options.includes] a list of dependencies that should be included in the automock "circle"
-     * @param {Object} [options.mocks] a map of mocks (path => instance) that autoMock should use (instead of creating
-     *                                 automatically)
-     * @param {Array} [options.passthrough] a list of dependencies that should be passed through (i.e. not mocked)
-     * @returns {*}
-     */
     function autoMock(moduleName, options) {
         options = options || {};
         options.mocks = options.mocks || {};
@@ -226,9 +214,6 @@
     }
 
     function when(mock) {
-        if (mock === undefined) {
-            throw 'Illegal argument to "when": given function is undefined';
-        }
         if (!jasmine.isSpy(mock)) {
             throw 'Illegal argument to "when": given function is not a mock.';
         }
@@ -310,7 +295,7 @@
                 if (typeof dep === 'string') {
                     return this.env.contains_(require.argsForCall, [dep]);
                 } else {
-                    return this.env.contains_(require.argsForCall, [dep, any(Function)]);
+                    return this.env.contains_(require.argsForCall, [dep, jasmine.any(Function)]);
                 }
             }
         });

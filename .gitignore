@@ -3,3 +3,6 @@ build
 *.iml
 .idea
 *.sublime*
+node_modules
+.grunt
+_SpecRunner.html

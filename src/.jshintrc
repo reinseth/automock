@@ -1,6 +1,6 @@
 {
     "bitwise": true,
-    "camelcase": true,
+    "camelcase": false,
     "curly": false,
     "eqeqeq": true,
     "forin": true,
@@ -16,10 +16,6 @@
 
     "smarttabs": true,
     "white": false,
-    "browser": true,
-
-    "globals": {
-        "define": true
-    }
+    "browser": true
 }
 
