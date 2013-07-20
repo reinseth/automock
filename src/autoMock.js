@@ -120,9 +120,11 @@
         };
     })(Strings);
 
-    function mock(obj, name) {
+    function mock(obj, name, depth) {
         // TODO classes/prototypes
         var result;
+
+        depth = depth || 0;
 
         if (Objects.isObject(obj)) {
             if (Objects.isFunction(obj)) {
@@ -134,9 +136,11 @@
                 result = {};
             }
 
+            if (depth > 2) return result;
+
             for (var prop in obj) {
                 if (obj.hasOwnProperty(prop)) {
-                    result[prop] = mock(obj[prop], name + '.' + prop);
+                    result[prop] = mock(obj[prop], name + '.' + prop, depth + 1);
                 }
             }
         } else {
