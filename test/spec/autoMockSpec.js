@@ -9,7 +9,7 @@ describe('autoMock', function () {
         var a = autoMock('a');
 
         // Assert
-        expect(a.dependencies.f1).toBeASpyWithName('f1');
+        expect(a.dependencies.f1).toBeAMockWithName('f1');
     });
 
     it('mocks dependencies that are objects with functions', function () {
@@ -17,7 +17,15 @@ describe('autoMock', function () {
         var a = autoMock('a');
 
         // Assert
-        expect(a.dependencies.b.init).toBeASpyWithName('b.init');
+        expect(a.dependencies.b.init).toBeAMockWithName('b.init');
+    });
+
+    it('mocks dependencies that are functions with functions', function () {
+        // Act
+        var a = autoMock('a');
+
+        // Assert
+        expect(a.dependencies.f1.staticFunc).toBeAMockWithName('f1.staticFunc');
     });
 
     it('passes through values as is', function () {
@@ -36,6 +44,36 @@ describe('autoMock', function () {
         // Assert
         expect(a.dependencies.b.arr).not.toBe(require('b').arr);
         expect(a.dependencies.b.arr).toEqual(require('b').arr);
+    });
+
+    it('modifies jasmine\'s toHaveBeenCalled matcher to recognise mocks created by autoMock', function () {
+        // Assert
+        var a = autoMock('a');
+        var jasmineSpy = jasmine.createSpy();
+
+        // Act
+        a.dependencies.f1();
+        jasmineSpy();
+
+        // Assert
+        expect(a.dependencies.f1).toHaveBeenCalled();
+        expect(jasmineSpy).toHaveBeenCalled();
+    });
+
+    it('modifies jasmine\'s toHaveBeenCalledWith matcher to recognise mocks created by autoMock', function () {
+        // Assert
+        var a = autoMock('a');
+        var jasmineSpy = jasmine.createSpy();
+        var arg1 = "one";
+        var arg2 = "two";
+
+        // Act
+        a.dependencies.f1(arg1, arg2);
+        jasmineSpy(arg1, arg2);
+
+        // Assert
+        expect(a.dependencies.f1).toHaveBeenCalledWith(arg1, arg2);
+        expect(jasmineSpy).toHaveBeenCalledWith(arg1, arg2);
     });
 
     describe('options.mocks', function () {
@@ -97,7 +135,7 @@ describe('autoMock', function () {
             });
 
             // Assert
-            expect(a.dependencies.b.init).not.toBeASpy();
+            expect(a.dependencies.b.init).not.toBeAMock();
         });
 
         it('creates new instances of the included modules', function () {
@@ -118,7 +156,7 @@ describe('autoMock', function () {
             });
 
             // Assert
-            expect(a.dependencies.f1).not.toBeASpy();
+            expect(a.dependencies.f1).not.toBeAMock();
         });
 
         it('supports exclusions from the list by prefixing a path with !', function () {
@@ -128,8 +166,8 @@ describe('autoMock', function () {
             });
 
             // Assert
-            expect(a.dependencies.u1).not.toBeASpy();
-            expect(a.dependencies.u2).toBeASpy();
+            expect(a.dependencies.u1).not.toBeAMock();
+            expect(a.dependencies.u2).toBeAMock();
         });
     });
 

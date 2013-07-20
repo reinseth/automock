@@ -2,27 +2,27 @@
     jasmine.getEnv().beforeEach(function () {
         this.addMatchers({
 
-            toBeASpy: function () {
+            toBeAMock: function () {
                 this.message = function () {
                     return [
-                        'expected given object to be a spy',
-                        'expected given object not to be a spy'
+                        'expected given object to be a mock',
+                        'expected given object not to be a mock'
                     ];
                 };
-                return jasmine.isSpy(this.actual);
+                return !!this.actual.__spy;
             },
 
-            toBeASpyWithName: function (name) {
-                var isSpy = this.actual.isSpy;
-                var actualName = this.actual.identity;
+            toBeAMockWithName: function (name) {
+                var isSpy = !!this.actual.__spy;
+                var actualName = isSpy ? this.actual.__spy.identity : '';
                 var nameMatches = actualName === name;
 
                 this.message = function () {
                     if (!isSpy) {
-                        return '"' + name + '" is not a spy';
+                        return '"' + name + '" is not a mock';
                     }
                     if (!nameMatches) {
-                        return 'expected name "' + name + '" doesn\'t match actual "' + actualName;
+                        return 'expected name "' + name + '" doesn\'t match actual "' + actualName + '"';
                     }
                     return null;
                 };

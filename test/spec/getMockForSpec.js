@@ -28,6 +28,6 @@ describe('getMockFor', function () {
         var f1Mock = getMockFor("f1");
 
         // Assert
-        expect(f1Mock).toBeASpyWithName("f1");
+        expect(f1Mock).toBeAMockWithName("f1");
     });
 });

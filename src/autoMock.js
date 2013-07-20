@@ -121,25 +121,28 @@
     })(Strings);
 
     function mock(obj, name) {
-        // TODO funksjoner med properties, og "klasser"
-        var result, value;
-        if (Objects.isFunction(obj)) {
-            result = jasmine.createSpy(name);
-        } else if (Objects.isObject(obj)) {
-            result = {};
+        // TODO classes/prototypes
+        var result;
+
+        if (Objects.isObject(obj)) {
+            if (Objects.isFunction(obj)) {
+                result = function() {
+                    return result.__spy.apply(null, arguments);
+                };
+                result.__spy = jasmine.createSpy(name);
+            } else {
+                result = {};
+            }
+
             for (var prop in obj) {
                 if (obj.hasOwnProperty(prop)) {
-                    value = obj[prop];
-                    if (Objects.isFunction(value)) {
-                        result[prop] = jasmine.createSpy(name + '.' + prop);
-                    } else {
-                        result[prop] = Objects.clone(value);
-                    }
+                    result[prop] = mock(obj[prop], name + '.' + prop);
                 }
             }
         } else {
             result = Objects.clone(obj);
         }
+
         return result;
     }
 
@@ -213,18 +216,19 @@
         return jasmine.getEnv().getMockFor(dependencyPath);
     }
 
-    function when(mock) {
-        if (!jasmine.isSpy(mock)) {
+    function when(mockOrSpy) {
+        var spy = jasmine.isSpy(mockOrSpy) ? mockOrSpy : mockOrSpy.__spy;
+        if (!spy) {
             throw 'Illegal argument to "when": given function is not a mock.';
         }
 
         return {
             isCalledWith: function() {
-                var origReset = mock.reset;
-                if (!mock.whenMocks) {
-                    mock.whenMocks = [];
-                    mock.reset = function() {
-                        delete mock.whenMocks;
+                var origReset = spy.reset;
+                if (!spy.whenMocks) {
+                    spy.whenMocks = [];
+                    spy.reset = function() {
+                        delete spy.whenMocks;
                         origReset.call(this);
                     };
                 }
@@ -234,8 +238,8 @@
                         match,
                         actualArgs = Array.prototype.slice.call(arguments);
 
-                    for (var i = mock.whenMocks.length; i > 0; i--) {
-                        candidate = mock.whenMocks[i - 1];
+                    for (var i = spy.whenMocks.length; i > 0; i--) {
+                        candidate = spy.whenMocks[i - 1];
                         if (jasmine.getEnv().equals_(actualArgs, candidate.args)) {
                             match = candidate;
                             break;
@@ -247,7 +251,7 @@
                     }
                     return null;
                 };
-                mock.andCallFake(thenFunc);
+                spy.andCallFake(thenFunc);
 
                 return {
                     _args: Array.prototype.slice.call(arguments),
@@ -257,10 +261,10 @@
                 };
             },
             thenCall: function(func) {
-                if (mock.whenMocks) {
-                    mock.whenMocks.push({args: this._args, func: func});
+                if (spy.whenMocks) {
+                    spy.whenMocks.push({args: this._args, func: func});
                 } else {
-                    mock.andCallFake(func);
+                    spy.andCallFake(func);
                 }
             },
             thenReturn: function(value) {
@@ -281,6 +285,9 @@
         };
     }
 
+    var toHaveBeenCalled = jasmine.Matchers.prototype.toHaveBeenCalled;
+    var toHaveBeenCalledWith = jasmine.Matchers.prototype.toHaveBeenCalledWith;
+
     jasmine.getEnv().beforeEach(function() {
         this.addMatchers({
             toHaveRequired: function(dep) {
@@ -297,6 +304,18 @@
                 } else {
                     return this.env.contains_(require.argsForCall, [dep, jasmine.any(Function)]);
                 }
+            },
+
+            toHaveBeenCalled: function () {
+                var actual = this.actual;
+                this.actual = actual.__spy || actual;
+                return toHaveBeenCalled.apply(this);
+            },
+
+            toHaveBeenCalledWith: function () {
+                var actual = this.actual;
+                this.actual = actual.__spy || actual;
+                return toHaveBeenCalledWith.apply(this, arguments);
             }
         });
     });

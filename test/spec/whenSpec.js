@@ -9,8 +9,31 @@ describe('when', function () {
         expect(invokeWhen).toThrow('Illegal argument to "when": given function is not a mock.');
     });
 
+    it('returns an object for stubbing when the given object is a mock', function () {
+        // Arrange
+        var a = autoMock('a');
+        var b = getMockFor('b');
+
+        // Act
+        var result = when(b.init);
+
+        // Assert
+        expect(result).toBeDefined();
+    });
+
+    it('returns an object for stubbing when the given object is a jasmine spy', function () {
+        // Arrange
+        var spy = jasmine.createSpy();
+
+        // Act
+        var result = when(spy);
+
+        // Assert
+        expect(result).toBeDefined();
+    });
+
     describe('thenReturn', function () {
-        it('returns the given value when the mock is invoked', function () {
+        it('sets up a jasmine spy to return the given value', function () {
             // Arrange
             var val = {};
             var mock = jasmine.createSpy();
@@ -21,13 +44,40 @@ describe('when', function () {
             // Assert
             expect(mock()).toBe(val);
         });
+
+        it('sets up a mock to return the given value', function () {
+            // Arrange
+            var val = {};
+            var a = autoMock('a');
+            var mock = getMockFor('f1');
+
+            // Act
+            when(mock).thenReturn(val);
+
+            // Assert
+            expect(mock()).toBe(val);
+        });
     });
 
     describe('thenCall', function () {
-        it('sets up the mock to return the value from the given function', function () {
+        it('sets up a jasmine spy to return the value from the given function', function () {
             // Arrange
             var val = {};
             var func = function() { return val; };
+            var mock = jasmine.createSpy();
+
+            // Act
+            when(mock).thenCall(func);
+
+            // Assert
+            expect(mock()).toBe(val);
+        });
+
+        it('sets up a mock to return the value from the given function', function () {
+            // Arrange
+            var val = {};
+            var func = function() { return val; };
+            var a = autoMock('a');
             var mock = jasmine.createSpy();
 
             // Act
